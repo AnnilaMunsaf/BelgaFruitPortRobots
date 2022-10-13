@@ -38,7 +38,7 @@ public class SingleLineFollower {
     //  static EV3UltrasonicSensor ultrasonicSensor = new EV3UltrasonicSensor(SensorPort.S3);
 
 
-    static EV3LargeRegulatedMotor motorA = new EV3LargeRegulatedMotor(MotorPort.A); //sag
+    static EV3LargeRegulatedMotor motorA = new EV3LargeRegulatedMotor(MotorPort.C); //sag
     static EV3LargeRegulatedMotor motorB = new EV3LargeRegulatedMotor(MotorPort.B); //sol
 
 
@@ -111,7 +111,7 @@ public class SingleLineFollower {
         int cumError1 = 0;
         int cumError2 = 0;
 
-        float Kp = 2.40F;   // 1.6 // 0.00001 //3.5
+        float Kp = 3.6F;   // 1.6 // 0.00001 //3.5
         float Ki = 0.00001F; //
         float Kd = 20.2F;
 
@@ -182,8 +182,8 @@ public class SingleLineFollower {
 
 
 
-                motorA.setSpeed((int) (240 - (output2)));  //out2
-                motorB.setSpeed((int) (240 - (output1)));  //out1
+                motorA.setSpeed((int) (200- (output2)));  //out2
+                motorB.setSpeed((int) (200 - (output1)));  //out1
                 Delay.msDelay(5);
 
                 motorA.forward();
