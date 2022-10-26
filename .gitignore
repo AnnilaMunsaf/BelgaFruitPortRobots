@@ -3,4 +3,8 @@
 build
 out
 *.iml
-
+bin
+.0 0.0
+ev3dev#1|Time in milliseconds using Calendar: 1665654551789
+ev3dev#1|Elapsed Time 41
+ev3dev#1|ERROR 1= 0  E
