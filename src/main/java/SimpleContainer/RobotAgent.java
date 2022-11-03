@@ -64,7 +64,6 @@ public class RobotAgent extends Agent{
                 int left_distance = Device.getLeftDistance();
                 int right_distance = Device.getRightDistance();
                 
-                
                 if (front_distance < stop_threshold) {
                     // GO BACKWARD
                     System.out.println("BACKWARD");
@@ -81,7 +80,6 @@ public class RobotAgent extends Agent{
                             front_distance = Device.getFrontDistance();
                             left_distance = Device.getLeftDistance();
                             right_distance = Device.getRightDistance();
-                            System.out.println("Right Distance: " + right_distance);
                         }
                     }
                     else {
@@ -90,7 +88,6 @@ public class RobotAgent extends Agent{
                             front_distance = Device.getFrontDistance();
                             left_distance = Device.getLeftDistance();
                             right_distance = Device.getRightDistance();
-                            System.out.println("Left Distance: " + left_distance);
                         }
                     }
                 }

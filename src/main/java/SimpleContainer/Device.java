@@ -21,8 +21,8 @@ public class Device {
         motor_left = new EV3MediumRegulatedMotor(MotorPort.C);
         motor_right = new EV3MediumRegulatedMotor(MotorPort.B);
         ultrasonic_front = new EV3UltrasonicSensor(SensorPort.S1);   // Front
-        ultrasonic_right = new EV3UltrasonicSensor(SensorPort.S3);   // Right
-        ultrasonic_left = new EV3UltrasonicSensor(SensorPort.S2);   // Left
+        ultrasonic_right = new EV3UltrasonicSensor(SensorPort.S2);   // Right
+        ultrasonic_left = new EV3UltrasonicSensor(SensorPort.S3);   // Left
         System.out.println("Init finishes");
 
         setSpeed(300);
@@ -74,7 +74,6 @@ public class Device {
         sp.fetchSample(sample, 0);
         distanceValue = (int)sample[0];
 
-        //System.out.println(distanceValue);
         if (distanceValue > 10000){
             distanceValue = 420;
         }
