@@ -19,7 +19,7 @@ public class RobotAgent extends Agent{
     int backward_speed = 240;
     int turn_speed = 200;
     int pid_base_speed = 240;
-    int free_speed = 300;
+    int free_speed = 360;
 
     @Override
     public void setup() {
