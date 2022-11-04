@@ -49,15 +49,15 @@ public class RobotAgent extends Agent{
         ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
         msg1.addReceiver(new AID("ComputerAgent", AID.ISLOCALNAME));
         msg1.setContent("ack");
-        addBehaviour(go_forward);
+        addBehaviour(free_walk);
         removeBehaviour(readWalk);
         send(msg1);
 
     }
 
-    TickerBehaviour go_forward = new TickerBehaviour(this, 500) {
+    CyclicBehaviour free_walk = new CyclicBehaviour() {
         @Override
-        protected void onTick() {
+        public void action() {
             try {
                 // GET DISTANCES
                 int front_distance = Device.getFrontDistance();
