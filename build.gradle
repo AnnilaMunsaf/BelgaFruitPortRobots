@@ -22,6 +22,8 @@ dependencies {
     implementation('org.slf4j:slf4j-simple:2.0.3')
     implementation("com.github.ev3dev-lang-java:ev3dev-lang-java:2.6.2-SNAPSHOT")
     implementation fileTree(dir: 'lib', include: ['*.jar'])
+    implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.5'
+    implementation('org.json:json:20210307')
 }
 
 compileJava.options.encoding = 'UTF-8'
