@@ -31,7 +31,7 @@ public class main {
                     System.out.println(cause);
                 }
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
-                    System.out.println("Positioning update: " + message.toString());
+
                 }
                 public void deliveryComplete(IMqttDeliveryToken token) {
                     System.out.println("Delivery complete");

@@ -6,7 +6,7 @@ import jade.lang.acl.ACLMessage;
 import lejos.utility.Delay;
 
 
-public class ComputerAgent extends Agent {
+public class CentralMonitor extends Agent {
     @Override
     public void setup() {
         addBehaviour(sendWalk);
