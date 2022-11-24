@@ -11,8 +11,6 @@ public class SimpleContainer {
     public static void main(String[] args) {
 
         try {
-
-
             Runtime runtime = Runtime.instance();
             String target ="192.168.0.120";
             String source ="192.168.0.118";

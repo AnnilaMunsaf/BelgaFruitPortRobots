@@ -9,13 +9,6 @@ import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 
 public class MainContainer {
-    /**
-     If you want to run the main container with a SimpleContainer you have to
-     . comment  MotorAgent, TouchAgent and ColorSensorAgent line 28 to 36
-     . de-comment  Agent1 line 25 to line 27
-     . Open the GUI by switching false to true (line 20) and in the start function comment  InitComps.configuration(); line 46
-     . Run MainContainer then SimpleContainer.
-     **/
     public static void main(String[] args) {
         try {
             Runtime runtime = Runtime.instance();
