@@ -9,28 +9,25 @@ import lejos.utility.Delay;
 public class CentralMonitor extends Agent {
     @Override
     public void setup() {
-        addBehaviour(sendWalk);
+        addBehaviour(registrationUnit);
     }
 
 
-    CyclicBehaviour sendWalk = new CyclicBehaviour() {
+    CyclicBehaviour registrationUnit = new CyclicBehaviour() {
         @Override
         public void action() {
-
             ACLMessage message=receive();
-            if (message!=null) {
-                if (message.getContent().equals("ack")) {
-                    removeBehaviour(sendWalk);
-                }
-            }
-            else {
-                System.out.println("FROM COMPUTER TO ROBOT");
+            if (getMessageType(message) == "Registration") {
+                // CHECK IF NOT REGISTERED ALREADY
+                
+                // CREATE TWIN AGENT
+                
+                // SEND ACK (WITH TWIN_ID)?
+                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+                msg.addReceiver(new AID("RobotAgent-N", AID.ISLOCALNAME));
+                msg.setContent("RegistrationAck"); // THIS NEEDS TO BE SOME JSON STRING
+                send(msg);
 
-                Delay.msDelay(1500);
-                ACLMessage msg1 = new ACLMessage(ACLMessage.INFORM);
-                msg1.addReceiver(new AID("RobotAgent", AID.ISLOCALNAME));
-                msg1.setContent("walk");
-                send(msg1);
             }
         }
     };
