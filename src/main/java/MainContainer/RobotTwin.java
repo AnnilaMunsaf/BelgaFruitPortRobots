@@ -4,7 +4,7 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import lejos.utility.Delay;
-import MainContainer.util.Point2D;
+import util.Point2D;
 
 
 enum Status {
@@ -14,14 +14,13 @@ enum Status {
 }
 
 public class RobotTwin extends Agent{
-    Status currentStatus = null;
-    Point2D status = null;
+    int ID;
+    Status currentStatus = Status.idle;
+    Point2D location = null;
     
     @Override
     public void setup() {
         
     }
-
-
     
 }

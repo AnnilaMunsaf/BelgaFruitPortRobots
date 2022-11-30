@@ -3,8 +3,8 @@ package SimpleContainer;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
-import lejos.utility.Delay;
 
 public class RobotAgent extends Agent {
 
@@ -15,17 +15,20 @@ public class RobotAgent extends Agent {
         addBehaviour(registration);
     }
 
-    CyclicBehaviour registration = new CyclicBehaviour() {
+    TickerBehaviour registration = new TickerBehaviour(this, 1000) {
         @Override
-        public void action() {
+        public void onTick() {
             ACLMessage message = receive();
 
-            // ACKNOWLEDGE RECEIVED
-            if (getMessageType(message) == "RegistrationAck") {
+            // CASE ACKNOWLEDGE RECEIVED
+            if (message!=null && message.getContent().equals("RegistrationAck")) {
+                //SET ID
+
+                //REMOVE BEHAVIOUR
                 removeBehaviour(registration);
             }
 
-            // SEND REGISTRATION REQUEST
+            // CASE ACKNOWDLEGE NOT RECEIVED -> SEND REGISTRATION REQUEST
             else {
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                 msg.addReceiver(new AID("CentralMonitor", AID.ISLOCALNAME));
@@ -34,6 +37,4 @@ public class RobotAgent extends Agent {
             }
         }
     };
-
-
 }

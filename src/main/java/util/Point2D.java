@@ -1,4 +1,4 @@
-package MainContainer.util;
+package util;
 
 public class Point2D {
     public int x;
