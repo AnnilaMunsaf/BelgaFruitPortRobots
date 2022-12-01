@@ -1,10 +1,21 @@
 package MainContainer;
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.AgentContainer;
+import jade.core.ContainerID;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.ActionExecutor;
+import jade.core.behaviours.OutcomeManager;
+import jade.core.behaviours.WakerBehaviour;
+import jade.domain.JADEAgentManagement.CreateAgent;
+import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.lang.acl.ACLMessage;
 
+
+
 public class CentralMonitor extends Agent {
+    int robots_count = 0;
+
     @Override
     public void setup() {
         addBehaviour(registrationUnit);
@@ -17,14 +28,47 @@ public class CentralMonitor extends Agent {
             ACLMessage message=receive();
             if (message!=null && message.getContent().equals("Registration")) {
                 // CREATE TWIN AGENT AND ID N
+                int robot_id = robots_count;
+                robots_count++;
+                createTwin(robot_id);
 
-                
                 // SEND ACK WITH CORRESPONDING ID
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-                msg.addReceiver(new AID("RobotAgent-N", AID.ISLOCALNAME));
+                msg.addReceiver(new AID("RobotAgent", AID.ISLOCALNAME));
                 msg.setContent("RegistrationAck"); // THIS NEEDS TO BE SOME JSON STRING
                 send(msg);
             }
         }
     };
+
+    void createTwin(int twin_id) {
+        addBehaviour(new WakerBehaviour(this, 100) {
+            @Override
+            public void onWake() {
+                // Request the AMS to perform the CreateAgent action of the JADEManagementOntology
+                // To do this use an ActionExecutor behaviour requesting the CreateAgent action and expecting no result (Void)
+                System.out.println("Creating agent!");
+                CreateAgent ca = new CreateAgent();
+                ca.setAgentName("RobotTwin-" + twin_id);
+                ca.setClassName("MainContainer.RobotTwin");
+                ca.setContainer(new ContainerID(AgentContainer.MAIN_CONTAINER_NAME, null));
+                ActionExecutor<CreateAgent, Void> ae = new ActionExecutor<CreateAgent, Void>(ca, JADEManagementOntology.getInstance(), getAMS()) {
+                    @Override
+                    public int onEnd() {
+                        int ret = super.onEnd();
+                        if (getExitCode() == OutcomeManager.OK) {
+                            // Creation successful
+                            System.out.println("Twin successfully created");
+                        }
+                        else {
+                            // Something went wrong
+                            System.out.println("Twin creation error. "+getErrorMsg());
+                        }
+                        return ret;
+                    }
+                };
+                addBehaviour(ae);
+            }
+        });
+    }
 }

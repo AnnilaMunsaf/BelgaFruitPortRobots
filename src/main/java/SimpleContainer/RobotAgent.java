@@ -2,7 +2,6 @@ package SimpleContainer;
 
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 
@@ -22,6 +21,8 @@ public class RobotAgent extends Agent {
 
             // CASE ACKNOWLEDGE RECEIVED
             if (message!=null && message.getContent().equals("RegistrationAck")) {
+                //GET ID
+                
                 //SET ID
 
                 //REMOVE BEHAVIOUR

@@ -18,10 +18,10 @@ public class MainContainer {
             Profile profile = new ProfileImpl(properties);
             AgentContainer agentContainer=runtime.createMainContainer(profile);
 
-            AgentController computerAgent=agentContainer.createNewAgent("ComputerAgent",
-                    "MainContainer.ComputerAgent",new Object[]{});
+            AgentController centralMonitor=agentContainer.createNewAgent("CentralMonitor",
+                    "MainContainer.CentralMonitor",new Object[]{});
 
-            computerAgent.start();
+            centralMonitor.start();
 
         } catch (Exception e) {
             // TODO Auto-generated catch block
