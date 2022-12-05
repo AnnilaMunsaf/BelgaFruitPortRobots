@@ -17,7 +17,6 @@ public class Device {
 
     public static void init() {
         System.out.println("Init starts");
-       // Delay.msDelay(6000);
         motor_left = new EV3MediumRegulatedMotor(MotorPort.C);
         motor_right = new EV3MediumRegulatedMotor(MotorPort.B);
         ultrasonic_front = new EV3UltrasonicSensor(SensorPort.S1);   // Front

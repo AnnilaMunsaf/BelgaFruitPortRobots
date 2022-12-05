@@ -2,40 +2,28 @@ package SimpleContainer;
 
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
+import util.JsonCreator;
 
 public class RobotAgent extends Agent {
 
-    int ID;
+    String ID;
 
     @Override
     public void setup() {
         addBehaviour(registration);
     }
 
-    TickerBehaviour registration = new TickerBehaviour(this, 1000) {
+    OneShotBehaviour registration = new OneShotBehaviour() {
         @Override
-        public void onTick() {
-            ACLMessage message = receive();
-
-            // CASE ACKNOWLEDGE RECEIVED
-            if (message!=null && message.getContent().equals("RegistrationAck")) {
-                //GET ID
-                
-                //SET ID
-
-                //REMOVE BEHAVIOUR
-                removeBehaviour(registration);
-            }
-
-            // CASE ACKNOWDLEGE NOT RECEIVED -> SEND REGISTRATION REQUEST
-            else {
-                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-                msg.addReceiver(new AID("CentralMonitor", AID.ISLOCALNAME));
-                msg.setContent("Registration"); // THIS NEEDS TO BE SOME JSON STRING
-                send(msg);
-            }
+        public void action() {
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(new AID("CentralMonitor", AID.ISLOCALNAME));
+            String request = JsonCreator.createRegistrationRequest(ID);
+            msg.setContent(request);
+            send(msg);
         }
     };
 }

@@ -6,11 +6,12 @@ import jade.core.ContainerID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.ActionExecutor;
 import jade.core.behaviours.OutcomeManager;
+import jade.core.behaviours.TickerBehaviour;
 import jade.core.behaviours.WakerBehaviour;
 import jade.domain.JADEAgentManagement.CreateAgent;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.lang.acl.ACLMessage;
-
+import util.JsonCreator;
 
 
 public class CentralMonitor extends Agent {
@@ -26,10 +27,10 @@ public class CentralMonitor extends Agent {
         @Override
         public void action() {
             ACLMessage message=receive();
-            if (message!=null && message.getContent().equals("Registration")) {
+            if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("Registration")) {
+                // RETRIEVE ROBOT ID
+                String robot_id = JsonCreator.parseRegistrationId(message.getContent());
                 // CREATE TWIN AGENT AND ID N
-                int robot_id = robots_count;
-                robots_count++;
                 createTwin(robot_id);
 
                 // SEND ACK WITH CORRESPONDING ID
@@ -41,13 +42,12 @@ public class CentralMonitor extends Agent {
         }
     };
 
-    void createTwin(int twin_id) {
+    void createTwin(String twin_id) {
         addBehaviour(new WakerBehaviour(this, 100) {
             @Override
             public void onWake() {
                 // Request the AMS to perform the CreateAgent action of the JADEManagementOntology
                 // To do this use an ActionExecutor behaviour requesting the CreateAgent action and expecting no result (Void)
-                System.out.println("Creating agent!");
                 CreateAgent ca = new CreateAgent();
                 ca.setAgentName("RobotTwin-" + twin_id);
                 ca.setClassName("MainContainer.RobotTwin");
