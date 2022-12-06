@@ -1,7 +1,9 @@
 package MainContainer;
+import SimpleContainer.Device;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
 import lejos.utility.Delay;
 import util.JsonCreator;
@@ -47,5 +49,20 @@ public class RobotTwin extends Agent{
             }
         }
     };
+
+    OneShotBehaviour sendLocation = new OneShotBehaviour() {
+        @Override
+        public void action() {
+            float yaw = tag.getYaw();
+            
+
+       /*     ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(new AID("RobotAgent-" + id, AID.ISLOCALNAME));
+            String message = JsonCreator.createSensorsFeedbackMessage(Device.getFrontDistance());
+            msg.setContent(message);
+            send(msg);*/
+        }
+    };
+
     
 }
