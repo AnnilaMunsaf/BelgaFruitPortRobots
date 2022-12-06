@@ -15,6 +15,13 @@ public final class JsonCreator {
         return request.toString();
     }
 
+    public static String createRegistrationAck() {
+        JsonObject request = new JsonObject();
+        request.addProperty("messageType", "registrationAck");
+        return request.toString();
+    }
+
+
     public static String parseMessageType(String message) {
         try {
             JsonObject msg = JsonParser.parseString(message).getAsJsonObject();
@@ -31,5 +38,21 @@ public final class JsonCreator {
         JsonObject data = msg.get("data").getAsJsonObject();
         String id = data.get("id").getAsString();
         return id;
+    }
+
+    public static String createSensorsFeedbackMessage(int frontDistance) {
+        JsonObject message = new JsonObject();
+        message.addProperty("messageType", "sensorsFeedback");
+        JsonObject data = new JsonObject();
+        data.addProperty("frontDistance", frontDistance);
+        message.add("data", data);
+        return message.toString();
+    }
+
+    public static int parseSensorsFeedbackMessage(String message) {
+        JsonObject msg = JsonParser.parseString(message).getAsJsonObject();
+        JsonObject data = msg.get("data").getAsJsonObject();
+        Integer frontDistance = data.get("frontDistance").getAsInt();
+        return frontDistance;
     }
 }

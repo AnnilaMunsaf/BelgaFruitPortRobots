@@ -38,7 +38,8 @@ public class CentralMonitor extends Agent {
                 // SEND AN ACKNOWLEDGMENT
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
                 msg.addReceiver(new AID("RobotAgent-"+robot_id, AID.ISLOCALNAME));
-                msg.setContent("RegistrationAck"); // THIS NEEDS TO BE SOME JSON STRING
+                String reply = JsonCreator.createRegistrationAck();
+                msg.setContent(reply); // THIS NEEDS TO BE SOME JSON STRING
                 send(msg);
             }
         }
