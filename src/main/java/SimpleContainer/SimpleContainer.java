@@ -11,9 +11,14 @@ public class SimpleContainer {
     public static void main(String[] args) {
 
         try {
+            // SET THIS TWO FIELDS BEFORE DEPLOYING TO THE ROBOT
+            String robot_ip = "192.168.0.171";
+            String tag_id = "682e";
+            tag_id = Integer.toString(Integer.parseInt(tag_id, 16));
+
             Runtime runtime = Runtime.instance();
             String target ="192.168.0.120";
-            String source ="192.168.0.118";
+            String source = robot_ip;
             ProfileImpl p = new ProfileImpl(target,1099,null,false);
 
             p.setParameter(Profile.LOCAL_HOST,source);
@@ -21,13 +26,9 @@ public class SimpleContainer {
 
             AgentContainer agentContainer=runtime.createAgentContainer(p);
             SimpleContainer.start();
-
-            // Properties properties = new ExtendedProperties();
-            // properties.setProperty(Profile.GUI, "true");
-            //      properties.
-            //Profile profile = new ProfileImpl(properties);
-            AgentController robotAgent = agentContainer.createNewAgent("RobotAgent",
-                        "SimpleContainer.RobotAgent",new Object[]{});
+            
+            RobotAgent newRobotAgent = new RobotAgent(tag_id);
+            AgentController robotAgent = agentContainer.acceptNewAgent("RobotAgent-" + tag_id, newRobotAgent);
 
             robotAgent.start();
 
@@ -39,6 +40,6 @@ public class SimpleContainer {
     }
 
     private static void start() {
-        Device.init();
+
     }
 }

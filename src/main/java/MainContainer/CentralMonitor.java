@@ -12,6 +12,7 @@ import jade.domain.JADEAgentManagement.CreateAgent;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.lang.acl.ACLMessage;
 import util.JsonCreator;
+import jade.security.Credentials;
 
 
 public class CentralMonitor extends Agent {
@@ -27,20 +28,22 @@ public class CentralMonitor extends Agent {
         @Override
         public void action() {
             ACLMessage message=receive();
-            if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("Registration")) {
+
+            if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("registration")) {
+                System.out.print("Reading a registration request\n");
                 // RETRIEVE ROBOT ID
                 String robot_id = JsonCreator.parseRegistrationId(message.getContent());
                 // CREATE TWIN AGENT AND ID N
                 createTwin(robot_id);
-
-                // SEND ACK WITH CORRESPONDING ID
+                // SEND AN ACKNOWLEDGMENT
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-                msg.addReceiver(new AID("RobotAgent", AID.ISLOCALNAME));
+                msg.addReceiver(new AID("RobotAgent-"+robot_id, AID.ISLOCALNAME));
                 msg.setContent("RegistrationAck"); // THIS NEEDS TO BE SOME JSON STRING
                 send(msg);
             }
         }
     };
+
 
     void createTwin(String twin_id) {
         addBehaviour(new WakerBehaviour(this, 100) {

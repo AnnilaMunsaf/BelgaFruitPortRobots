@@ -14,10 +14,12 @@ enum Status {
 }
 
 public class RobotTwin extends Agent{
+ 
     Status currentStatus = Status.idle;
     String id;
     TagIdMqtt tag;
 
+    /* 
     public RobotTwin(String id){
         this.id = id;
         try {
@@ -27,10 +29,18 @@ public class RobotTwin extends Agent{
 
         }
     }
+    */
 
     @Override
     public void setup() {
-        
+        this.id = "26670";
+        try {
+            this.tag = new TagIdMqtt(id);
+        }
+        catch (MqttException me) {
+
+        }
+        System.out.print("Digital Twin Created\n");
     }
     
 }
