@@ -17,14 +17,12 @@ public class Device {
 
     public static void init() {
         System.out.println("Motor/Sensors Init starts");
-        motor_right = new EV3MediumRegulatedMotor(MotorPort.C);
-        motor_left = new EV3MediumRegulatedMotor(MotorPort.B);
+        motor_right = new EV3MediumRegulatedMotor(MotorPort.D);
+        motor_left = new EV3MediumRegulatedMotor(MotorPort.A);
         ultrasonic_front = new EV3UltrasonicSensor(SensorPort.S2);   // Front
         //ultrasonic_right = new EV3UltrasonicSensor(SensorPort.S2);   // Right
         //ultrasonic_left = new EV3UltrasonicSensor(SensorPort.S3);   // Left
         System.out.println("Motor/Sensors Init finishes");
-
-        setSpeed(300);
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {

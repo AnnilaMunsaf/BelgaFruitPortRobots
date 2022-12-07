@@ -4,6 +4,7 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.core.behaviours.ParallelBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import util.JsonCreator;
@@ -17,6 +18,7 @@ enum Order {
 }
 
 public class RobotAgent extends Agent {
+     ParallelBehaviour test = new ParallelBehaviour();
 
     String id;
     Order current_order; 
@@ -39,7 +41,7 @@ public class RobotAgent extends Agent {
             if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("registrationAck")) {
                 removeBehaviour(registration);
                 addBehaviour(sensorsFeedback);
-                addBehaviour(executeCurrentOrder);
+                addBehaviour(readOrders);
             }
             else {
                 System.out.print("Sending a registration request\n");
@@ -72,25 +74,38 @@ public class RobotAgent extends Agent {
                 // FORWARD ORDER
                 if (JsonCreator.parseOrderType(message.getContent()).equals("forward")) {
                     current_order = Order.forward;
-                    int speed = JsonCreator.parseForwardOrderSpeed(message.getContent());
+                    int speed = JsonCreator.parseOrderSpeed(message.getContent());
                     Device.setSpeed(speed);
                 }
                 // BACKWARD ORDER
-
+                else if (JsonCreator.parseOrderType(message.getContent()).equals("backward")) {
+                    current_order = Order.backward;
+                    int speed = JsonCreator.parseOrderSpeed(message.getContent());
+                    Device.setSpeed(speed);
+                }
                 // TURN LEFT ORDER
-
+                else if (JsonCreator.parseOrderType(message.getContent()).equals("left")) {
+                    current_order = Order.turn_left;
+                    int speed = JsonCreator.parseOrderSpeed(message.getContent());
+                    Device.setSpeed(speed);
+                }
                 // TURN RIGHT ORDER
-
+                else if (JsonCreator.parseOrderType(message.getContent()).equals("right")) {
+                    current_order = Order.turn_right;
+                    int speed = JsonCreator.parseOrderSpeed(message.getContent());
+                    Device.setSpeed(speed);
+                }
                 // STOP ORDER
-                if (JsonCreator.parseOrderType(message.getContent()).equals("stop")) {
+                else if (JsonCreator.parseOrderType(message.getContent()).equals("stop")) {
                     current_order = Order.stop;
                     Device.setSpeed(0);
                 }
+                addBehaviour(executeCurrentOrder);
             }
         }
     };
 
-    CyclicBehaviour executeCurrentOrder = new CyclicBehaviour() {
+    OneShotBehaviour executeCurrentOrder = new OneShotBehaviour() {
         @Override
         public void action() {
             switch (current_order) {
@@ -101,10 +116,13 @@ public class RobotAgent extends Agent {
                     Device.stop();
                     break;
                 case backward:
+                    Device.backward();
                     break;
                 case turn_left:
+                    Device.turnLeft();
                     break;
                 case turn_right:
+                    Device.turnRight();
                     break;
             }
         }

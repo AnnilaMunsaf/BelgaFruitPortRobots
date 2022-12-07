@@ -66,6 +66,26 @@ public final class JsonCreator {
         return message.toString();
     }
 
+    public static String createLeftOrder(int speed) {
+        JsonObject message = new JsonObject();
+        message.addProperty("messageType", "order");
+        JsonObject data = new JsonObject();
+        data.addProperty("type", "left");
+        data.addProperty("speed", speed);
+        message.add("data", data);
+        return message.toString();
+    }
+
+    public static String createRightOrder(int speed) {
+        JsonObject message = new JsonObject();
+        message.addProperty("messageType", "order");
+        JsonObject data = new JsonObject();
+        data.addProperty("type", "right");
+        data.addProperty("speed", speed);
+        message.add("data", data);
+        return message.toString();
+    }
+
     public static String createStopOrder() {
         JsonObject message = new JsonObject();
         message.addProperty("messageType", "order");
@@ -82,7 +102,7 @@ public final class JsonCreator {
         return order;
     }
 
-    public static int parseForwardOrderSpeed(String message) {
+    public static int parseOrderSpeed(String message) {
         JsonObject msg = JsonParser.parseString(message).getAsJsonObject();
         JsonObject data = msg.get("data").getAsJsonObject();
         Integer speed = data.get("speed").getAsInt();

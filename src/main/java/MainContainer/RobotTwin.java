@@ -38,6 +38,8 @@ public class RobotTwin extends Agent{
         System.out.print("Digital Twin Created\n");
 
         addBehaviour(readSensorsFeedback);
+        target_location = new Point2D(14488,14256);
+        addBehaviour(goToLocation);
     }
 
     CyclicBehaviour readSensorsFeedback = new CyclicBehaviour() {
@@ -61,6 +63,28 @@ public class RobotTwin extends Agent{
         }
     };
 
+    OneShotBehaviour sendLeft = new OneShotBehaviour() {
+        @Override
+        public void action() {
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(new AID("RobotAgent-"+id, AID.ISLOCALNAME));
+            String message = JsonCreator.createLeftOrder(50);
+            msg.setContent(message); // THIS NEEDS TO BE SOME JSON STRING
+            send(msg);
+        }
+    };
+
+    OneShotBehaviour sendRight = new OneShotBehaviour() {
+        @Override
+        public void action() {
+            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+            msg.addReceiver(new AID("RobotAgent-"+id, AID.ISLOCALNAME));
+            String message = JsonCreator.createRightOrder(50);
+            msg.setContent(message); // THIS NEEDS TO BE SOME JSON STRING
+            send(msg);
+        }
+    };
+
     OneShotBehaviour sendStop = new OneShotBehaviour() {
         @Override
         public void action() {
@@ -72,17 +96,6 @@ public class RobotTwin extends Agent{
         }
     };
     
-    CyclicBehaviour monitorLocation = new CyclicBehaviour() {
-        @Override
-        public void action() {
-            Point2D location = tag.getLocation();
-
-            // IF LOCATION AROUND THE DESIRED LOCATION ADD SENDSTOP BEHAVIOUR
-
-
-        }
-    };
-
     CyclicBehaviour goToLocation = new CyclicBehaviour() {
 
         @Override
@@ -95,69 +108,47 @@ public class RobotTwin extends Agent{
                     int target_x = target_location.x;
                     int target_y = target_location.y;
 
-                    System.out.println("x: " + x);
-                    System.out.println("y: " + y);
-
                     float yaw = (float) Math.toDegrees(tag.getYaw());
-                   // yaw = (float) (yaw-301.5);
-                    System.out.println("yaw mission="+yaw);
 
-                    double diff_y = target_y - y;
-                    double diff_x = target_x - x;
-
-                    System.out.println("diff_y="+diff_y);
-                    System.out.println("diff_x="+diff_x);
-
-
-                   double dist = Point2D.distance(x, y, target_x, target_y);
-
-                                       //double atan2 =Math.atan2(diff_y, diff_x);
-
-                    //System.out.println("atan2="+atan2);
-
-                    //float target_angle = (float) Math.toDegrees(atan2); //??
-
+                   //double dist = Point2D.distance(x, y, target_x, target_y);
+                    double dist = tag.getSmoothenedLocation(10).dist(target_location);
+                    System.out.println("DISTANCE: "+ dist);
 
                     float target_angle = (float) Math.toDegrees(Math.atan2(y - target_y, target_x - x)); //??
-
-
-                    System.out.println("Target Angle"+target_angle);
-
                     float diff_angle = target_angle - yaw;
-                    System.out.println("Diff Angle"+diff_angle);
 
+                    diff_angle = diff_angle % 360;
+                    while (diff_angle < 0) { //pretty sure this comparison is valid for doubles and floats
+                        diff_angle += 360.0;
+                    }
 
-
-                     diff_angle = diff_angle % 360;
-                     while (diff_angle < 0) { //pretty sure this comparison is valid for doubles and floats
-                     diff_angle += 360.0;
-                     }
-
-                    System.out.println("- AFTER Diff Angle**"+diff_angle);
-
-
-                    if (Math.abs(target_x - x) < 100 && Math.abs(target_y - y) < 100) {    // old params diff_angle > 10 && diff_angle <= 180, diff_angle < 350 && diff_angle > 180
-                        path_iterator += 2;
-                    } else if (diff_angle > 10 && diff_angle <= 180) {
-                        Device.setSpeed(200);
-                        addBehaviour(turn_right);
+                    // DESTINATION IS REACHED
+                    if (Math.abs(target_x - x) < 100 && Math.abs(target_y - y) < 100) {  
+                        target_location = null;
+                        removeBehaviour(goToLocation);
+                    } 
+                    // TOO MUCH RIGHT
+                    else if (diff_angle > 10 && diff_angle <= 180) {
+                        //Device.setSpeed(200);
+                        addBehaviour(sendRight);
                         System.out.println("RIGHT");
-                    } else if (diff_angle < 350 && diff_angle > 180) {
-                        Device.setSpeed(200);
-                        addBehaviour(turn_left);
+                    } 
+                    // TOO MUCH LEFT
+                    else if (diff_angle < 350 && diff_angle > 180) {
+                        //Device.setSpeed(200);
+                        addBehaviour(sendLeft);
                         System.out.println("LEFT");
                     }
 //                    else if (obstacle) {
 //                        addBehaviour(stop);
 //                    }
+
+                    // JUST GO FORWARD
                     else {
-                        Device.fuzzy_speed_distance(dist,yaw); // fuzzy_speed
-                       addBehaviour(go_forward);
+                        //Device.fuzzy_speed_distance(dist,yaw); // fuzzy_speed
+                        addBehaviour(sendForward);
                         System.out.println("FORWARD");
                     }
-
-
-
                   //  block(5000);
                 }
 
