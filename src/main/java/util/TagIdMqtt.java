@@ -36,6 +36,7 @@ public class TagIdMqtt {
 
     volatile Point2D notSmoothened;
 
+    private float yaw;
 
     public final List<Point2D> locations = new ArrayList<>();
 
@@ -85,6 +86,8 @@ public class TagIdMqtt {
     public Point2D getLocation() {
         return notSmoothened;
     }
+
+    public float getYaw(){ return yaw; }
 
     private MqttClient create_client() throws MqttException {
         return create_client(host, topic, username, password);
@@ -158,6 +161,8 @@ public class TagIdMqtt {
                                     JSONObject coordinates = json.getJSONObject("data").getJSONObject("coordinates");
                                     locations.add(new Point2D(coordinates.getInt("x"), coordinates.getInt("y")));
                                     notSmoothened = new Point2D(coordinates.getInt("x"), coordinates.getInt("y"));
+                                    JSONObject orientation = json.getJSONObject("data").getJSONObject("orientation");
+                                    yaw = orientation.getFloat("yaw");
                                     lock.notify();
 
                                 } else if (!jsonObject.getJSONObject(i).getBoolean("success")) {
