@@ -55,4 +55,39 @@ public final class JsonCreator {
         Integer frontDistance = data.get("frontDistance").getAsInt();
         return frontDistance;
     }
+
+    public static String createForwardOrder(int speed) {
+        JsonObject message = new JsonObject();
+        message.addProperty("messageType", "order");
+        JsonObject data = new JsonObject();
+        data.addProperty("type", "forward");
+        data.addProperty("speed", speed);
+        message.add("data", data);
+        return message.toString();
+    }
+
+    public static String createStopOrder() {
+        JsonObject message = new JsonObject();
+        message.addProperty("messageType", "order");
+        JsonObject data = new JsonObject();
+        data.addProperty("type", "stop");
+        message.add("data", data);
+        return message.toString();
+    }
+
+    public static String parseOrderType(String message) {
+        JsonObject msg = JsonParser.parseString(message).getAsJsonObject();
+        JsonObject data = msg.get("data").getAsJsonObject();
+        String order = data.get("type").getAsString();
+        return order;
+    }
+
+    public static int parseForwardOrderSpeed(String message) {
+        JsonObject msg = JsonParser.parseString(message).getAsJsonObject();
+        JsonObject data = msg.get("data").getAsJsonObject();
+        Integer speed = data.get("speed").getAsInt();
+        return speed;
+    }
+
+    
 }
