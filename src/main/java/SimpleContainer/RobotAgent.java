@@ -40,7 +40,7 @@ public class RobotAgent extends Agent {
             ACLMessage message=receive();
             if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("registrationAck")) {
                 removeBehaviour(registration);
-                addBehaviour(sensorsFeedback);
+                //addBehaviour(sensorsFeedback);
                 addBehaviour(readOrders);
             }
             else {
@@ -74,6 +74,7 @@ public class RobotAgent extends Agent {
                 // FORWARD ORDER
                 if (JsonCreator.parseOrderType(message.getContent()).equals("forward")) {
                     current_order = Order.forward;
+                    System.out.println("FORWARD PHYSICAL");
                     int speed = JsonCreator.parseOrderSpeed(message.getContent());
                     Device.setSpeed(speed);
                 }
@@ -86,12 +87,14 @@ public class RobotAgent extends Agent {
                 // TURN LEFT ORDER
                 else if (JsonCreator.parseOrderType(message.getContent()).equals("left")) {
                     current_order = Order.turn_left;
+                    System.out.println("LEFT PHYSICAL");
                     int speed = JsonCreator.parseOrderSpeed(message.getContent());
                     Device.setSpeed(speed);
                 }
                 // TURN RIGHT ORDER
                 else if (JsonCreator.parseOrderType(message.getContent()).equals("right")) {
                     current_order = Order.turn_right;
+                    System.out.println("RIGHT PHYSICAL");
                     int speed = JsonCreator.parseOrderSpeed(message.getContent());
                     Device.setSpeed(speed);
                 }
