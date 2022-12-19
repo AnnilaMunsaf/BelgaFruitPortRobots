@@ -20,8 +20,8 @@ public class Device {
         motor_right = new EV3MediumRegulatedMotor(MotorPort.D);
         motor_left = new EV3MediumRegulatedMotor(MotorPort.A);
         ultrasonic_front = new EV3UltrasonicSensor(SensorPort.S2);   // Front
-        //ultrasonic_right = new EV3UltrasonicSensor(SensorPort.S2);   // Right
-        //ultrasonic_left = new EV3UltrasonicSensor(SensorPort.S3);   // Left
+        ultrasonic_right = new EV3UltrasonicSensor(SensorPort.S1);   // Right
+        ultrasonic_left = new EV3UltrasonicSensor(SensorPort.S4);   // Left
         System.out.println("Motor/Sensors Init finishes");
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {

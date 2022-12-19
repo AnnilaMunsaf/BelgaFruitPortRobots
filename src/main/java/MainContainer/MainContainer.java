@@ -11,6 +11,7 @@ import jade.wrapper.AgentController;
 public class MainContainer {
     public static void main(String[] args) {
         try {
+
             Runtime runtime = Runtime.instance();
             Properties properties = new ExtendedProperties();
             properties.setProperty(Profile.GUI, "true");

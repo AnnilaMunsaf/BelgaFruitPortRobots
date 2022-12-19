@@ -40,20 +40,36 @@ public final class JsonCreator {
         return id;
     }
 
-    public static String createSensorsFeedbackMessage(int frontDistance) {
+    public static String createSensorsFeedbackMessage(int frontDistance, int leftDistance, int rightDistance) {
         JsonObject message = new JsonObject();
         message.addProperty("messageType", "sensorsFeedback");
         JsonObject data = new JsonObject();
         data.addProperty("frontDistance", frontDistance);
+        data.addProperty("leftDistance", leftDistance);
+        data.addProperty("rightDistance", rightDistance);
         message.add("data", data);
         return message.toString();
     }
 
-    public static int parseSensorsFeedbackMessage(String message) {
+    public static int parseSensorsFrontDistance(String message) {
         JsonObject msg = JsonParser.parseString(message).getAsJsonObject();
         JsonObject data = msg.get("data").getAsJsonObject();
         Integer frontDistance = data.get("frontDistance").getAsInt();
         return frontDistance;
+    }
+
+    public static int parseSensorsLeftDistance(String message) {
+        JsonObject msg = JsonParser.parseString(message).getAsJsonObject();
+        JsonObject data = msg.get("data").getAsJsonObject();
+        Integer leftDistance = data.get("leftDistance").getAsInt();
+        return leftDistance;
+    }
+
+    public static int parseSensorsRightDistance(String message) {
+        JsonObject msg = JsonParser.parseString(message).getAsJsonObject();
+        JsonObject data = msg.get("data").getAsJsonObject();
+        Integer rightDistance = data.get("rightDistance").getAsInt();
+        return rightDistance;
     }
 
     public static String createForwardOrder(int speed) {
@@ -95,6 +111,25 @@ public final class JsonCreator {
         return message.toString();
     }
 
+    public static String createBackwardOrder(int speed) {
+        JsonObject message = new JsonObject();
+        message.addProperty("messageType", "order");
+        JsonObject data = new JsonObject();
+        data.addProperty("type", "backward");
+        data.addProperty("speed", speed);
+        message.add("data", data);
+        return message.toString();
+    }
+
+    public static String createObstacleAvoidingOrder() {
+        JsonObject message = new JsonObject();
+        message.addProperty("messageType", "order");
+        JsonObject data = new JsonObject();
+        data.addProperty("type", "obstacleAvoiding");
+        message.add("data", data);
+        return message.toString();
+    }
+
     public static String parseOrderType(String message) {
         JsonObject msg = JsonParser.parseString(message).getAsJsonObject();
         JsonObject data = msg.get("data").getAsJsonObject();
@@ -108,6 +143,10 @@ public final class JsonCreator {
         Integer speed = data.get("speed").getAsInt();
         return speed;
     }
+
+    
+
+    
 
     
 }
