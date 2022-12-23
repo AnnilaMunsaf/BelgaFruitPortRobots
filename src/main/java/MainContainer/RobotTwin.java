@@ -5,6 +5,7 @@ import jade.core.behaviours.*;
 import jade.lang.acl.ACLMessage;
 import util.JsonCreator;
 import util.TagIdMqtt;
+import util.WorkItem;
 import util.Point2D;
 import org.eclipse.paho.client.mqttv3.*;
 
@@ -13,15 +14,6 @@ enum Status {
     dropping_off,
     idle
 }
-
-enum BEHAVIOR {
-    LEFT,
-    RIGHT,
-    FORWARD,
-    STOP,
-    BACKWARD
-}
-
 public class RobotTwin extends Agent{
     // IDs
     String id;
@@ -29,44 +21,34 @@ public class RobotTwin extends Agent{
     
     // STATUS
     Status currentStatus = Status.idle;
-    BEHAVIOR lastBehavior = null;
 
     // TAGS
     TagIdMqtt tag;
-    TagIdMqtt targetTag;
+
+    // WORK ITEMS
+    WorkItem currentWorkItem = null;
 
     // SENSORS
     int frontDistance;
     int leftDistance;
     int rightDistance;
 
-    // THRESHHOLDS
-    int frontThreshold = 30;
-    int backwardThreshold = 15;
-    int sideThreshold = 15;
-
-
-    // UTIL
-    Point2D target_location;
-    long start = System.currentTimeMillis();
 
     @Override
     public void setup() {
         this.id = "6823";
-        this.targetId = "682e";
         try {
             this.tag = new TagIdMqtt(id);
-            this.targetTag = new TagIdMqtt(targetId);
         }
         catch (MqttException me) {
             System.out.println("something Went Wrong");
         }
         System.out.print("Digital Twin Created\n");
 
-        addBehaviour(readSensorsFeedback);
+        addBehaviour(messageHandler);
     }
 
-    CyclicBehaviour readSensorsFeedback = new CyclicBehaviour() {
+    CyclicBehaviour messageHandler = new CyclicBehaviour() {
         @Override
         public void action() {
             ACLMessage message = receive();
@@ -75,6 +57,32 @@ public class RobotTwin extends Agent{
                 leftDistance = JsonCreator.parseSensorsLeftDistance(message.getContent());
                 rightDistance = JsonCreator.parseSensorsRightDistance(message.getContent());
             }
+            else if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("workItem")) {
+                Point2D pickup = JsonCreator.parseWorkItemPickUp(message.getContent());
+                Point2D dropoff = JsonCreator.parseWorkItemDropOff(message.getContent());
+                currentWorkItem = new WorkItem(pickup, dropoff);
+                currentStatus = Status.picking_up;
+                sendMessage("RobotAgent-" + id, JsonCreator.createTargetLocationUpdateMessage(currentWorkItem.getPickup()));
+            }
+            else if (message != null && JsonCreator.parseMessageType(message.getContent()).equals("locationReached")) {
+                if (currentStatus == Status.picking_up) {
+                    currentStatus = Status.dropping_off;
+                    sendMessage("RobotAgent-" + id, JsonCreator.createTargetLocationUpdateMessage(currentWorkItem.getDropoff()));
+                }
+                else if (currentStatus == Status.dropping_off) {
+                    currentStatus = Status.idle;
+                    currentWorkItem = null;
+                    sendMessage("CentralMonitor", JsonCreator.createWorkItemFinishedMessage(id));
+                }
+            };
         }
     };
+
+    void sendMessage(String receiver, String message) {
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.addReceiver(new AID(receiver, AID.ISLOCALNAME));
+        msg.setContent(message);
+        send(msg);
+    }
+
 }

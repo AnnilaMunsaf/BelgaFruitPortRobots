@@ -1,4 +1,6 @@
 package MainContainer;
+import java.util.ArrayList;
+
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.AgentContainer;
@@ -12,19 +14,27 @@ import jade.domain.JADEAgentManagement.CreateAgent;
 import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.lang.acl.ACLMessage;
 import util.JsonCreator;
+import util.WorkItem;
 import jade.security.Credentials;
 
 
 public class CentralMonitor extends Agent {
-    int robots_count = 0;
+    ArrayList<WorkItem> workItems = new ArrayList<WorkItem>();
+    ArrayList<String> freeRobots = new ArrayList<String>();
+    ArrayList<String> busyRobots = new ArrayList<String>();
+
 
     @Override
     public void setup() {
-        addBehaviour(registrationUnit);
+        addBehaviour(messageHandler);
+        addBehaviour(assignWorkItems);
+        //workItems.add(new WorkItem(15285, 14860, 14180, 13756));
+        workItems.add(new WorkItem(12655,14880, 14830, 13837 ));
+
     }
 
 
-    CyclicBehaviour registrationUnit = new CyclicBehaviour() {
+    CyclicBehaviour messageHandler = new CyclicBehaviour() {
         @Override
         public void action() {
             ACLMessage message=receive();
@@ -36,15 +46,43 @@ public class CentralMonitor extends Agent {
                 // CREATE TWIN AGENT AND ID N
                 createTwin(robot_id);
                 // SEND AN ACKNOWLEDGMENT
-                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-                msg.addReceiver(new AID("RobotAgent-"+robot_id, AID.ISLOCALNAME));
-                String reply = JsonCreator.createRegistrationAck();
-                msg.setContent(reply); // THIS NEEDS TO BE SOME JSON STRING
-                send(msg);
+                sendMessage("RobotAgent-"+robot_id, JsonCreator.createRegistrationAck());
+
+                freeRobots.add(robot_id);
+            }
+            else if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("workItemFinished")) {
+                String robot_id = JsonCreator.parseWorkItemFinished(message.getContent());
+                freeRobots.add(robot_id);
+                busyRobots.remove(robot_id);
             }
         }
     };
 
+    TickerBehaviour assignWorkItems = new TickerBehaviour(this, 5000) {
+        @Override
+        public void onTick() {
+            if (!workItems.isEmpty() && !freeRobots.isEmpty()) {
+                // GET WORK ITEM + SOME FREE ROBOT ID
+                WorkItem toDoWorkItem = workItems.remove(0);
+                String toDoRobotId = freeRobots.remove(0);
+                
+                // MAKE MESSAGE
+                String msg = JsonCreator.createWorkItemMessage(toDoWorkItem);
+
+                // SEND TO ROBOT ID TWIN
+                sendMessage("RobotTwin-" + toDoRobotId, msg);
+                
+                busyRobots.add(toDoRobotId);
+            }
+        }
+    };
+
+    void sendMessage(String receiver, String message) {
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.addReceiver(new AID(receiver, AID.ISLOCALNAME));
+        msg.setContent(message);
+        send(msg);
+    }
 
     void createTwin(String twin_id) {
         addBehaviour(new WakerBehaviour(this, 100) {
