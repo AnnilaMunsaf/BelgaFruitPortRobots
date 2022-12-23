@@ -88,7 +88,7 @@ public class RobotAgent extends Agent {
             msg.addReceiver(new AID("RobotTwin-" + id, AID.ISLOCALNAME));
             String message = JsonCreator.createSensorsFeedbackMessage(Device.getFrontDistance(), Device.getLeftDistance(), Device.getRightDistance());
             msg.setContent(message);
-            send(msg);
+            send(msg); 
         }
 
     };
