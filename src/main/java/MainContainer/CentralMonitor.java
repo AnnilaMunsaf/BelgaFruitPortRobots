@@ -1,6 +1,5 @@
 package MainContainer;
 import java.util.ArrayList;
-
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.AgentContainer;
@@ -15,21 +14,23 @@ import jade.domain.JADEAgentManagement.JADEManagementOntology;
 import jade.lang.acl.ACLMessage;
 import util.JsonCreator;
 import util.WorkItem;
-import jade.security.Credentials;
+import util.TagIdMqtt;
+import org.eclipse.paho.client.mqttv3.*;
+
+
 
 
 public class CentralMonitor extends Agent {
     ArrayList<WorkItem> workItems = new ArrayList<WorkItem>();
-    ArrayList<String> freeRobots = new ArrayList<String>();
-    ArrayList<String> busyRobots = new ArrayList<String>();
 
+    ArrayList<TagIdMqtt> idleRobots = new ArrayList<TagIdMqtt>();
+    ArrayList<TagIdMqtt> busyRobots = new ArrayList<TagIdMqtt>();    
 
     @Override
     public void setup() {
         addBehaviour(messageHandler);
-        addBehaviour(assignWorkItems);
-        //workItems.add(new WorkItem(15285, 14860, 14180, 13756));
-        workItems.add(new WorkItem(12655,14880, 14830, 13837 ));
+        addBehaviour(scheduler);
+        workItems.add(new WorkItem(12655, 14880, 14830, 13837));
 
     }
 
@@ -39,41 +40,69 @@ public class CentralMonitor extends Agent {
         public void action() {
             ACLMessage message=receive();
 
+            // REGISTRATION REQUEST
             if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("registration")) {
                 System.out.print("Reading a registration request\n");
                 // RETRIEVE ROBOT ID
                 String robot_id = JsonCreator.parseRegistrationId(message.getContent());
-                // CREATE TWIN AGENT AND ID N
-                createTwin(robot_id);
-                // SEND AN ACKNOWLEDGMENT
-                sendMessage("RobotAgent-"+robot_id, JsonCreator.createRegistrationAck());
+                
+                // IF ROBOT WITH THAT ID NOT YET REGISTERED
+                if (findRobot(robot_id) == 0) {
+                    // CREATE TWIN AGENT AND SEND ID TO TWIN
+                    createTwin(robot_id);
+                    sendMessage("RobotTwin-"+robot_id, JsonCreator.createIdUpdateMessage(robot_id));
 
-                freeRobots.add(robot_id);
+                    // SEND AN ACKNOWLEDGMENT TO THE ROBOT AGENT
+                    sendMessage("RobotAgent-"+robot_id, JsonCreator.createRegistrationAck());
+            
+                    try {
+                        idleRobots.add(new TagIdMqtt(robot_id));
+                    }
+                    catch (MqttException me) {
+                        System.out.println("Something Went Wrong");
+                    }
+                }
             }
+
             else if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("workItemFinished")) {
                 String robot_id = JsonCreator.parseWorkItemFinished(message.getContent());
-                freeRobots.add(robot_id);
-                busyRobots.remove(robot_id);
+                int index = findRobot(robot_id);
+                idleRobots.add(busyRobots.get(index));
+                busyRobots.remove(index);
             }
         }
     };
 
-    TickerBehaviour assignWorkItems = new TickerBehaviour(this, 5000) {
+    TickerBehaviour scheduler = new TickerBehaviour(this, 1000) {
         @Override
         public void onTick() {
-            if (!workItems.isEmpty() && !freeRobots.isEmpty()) {
-                // GET WORK ITEM + SOME FREE ROBOT ID
+            if (!workItems.isEmpty() && !idleRobots.isEmpty()) {
+                // GET WORK ITEM
                 WorkItem toDoWorkItem = workItems.remove(0);
-                String toDoRobotId = freeRobots.remove(0);
                 
-                // MAKE MESSAGE
+                // GET ROBOT WHICH IS THE CLOSEST TO THE PICKUP LOCATION OF THE WORK ITEM
+                TagIdMqtt toDoRobot = idleRobots.remove(0);
+                
+                // CREATE MESSAGE
                 String msg = JsonCreator.createWorkItemMessage(toDoWorkItem);
 
-                // SEND TO ROBOT ID TWIN
-                sendMessage("RobotTwin-" + toDoRobotId, msg);
+                // SEND TO WORK ITEM TO ROBOT TWIN
+                sendMessage("RobotTwin-" + toDoRobot.getTagId(), msg);
                 
-                busyRobots.add(toDoRobotId);
+                busyRobots.add(toDoRobot);
             }
+        }
+    };
+
+    TickerBehaviour collisionDetector = new TickerBehaviour(this, 1000) {
+        @Override
+        public void onTick() {
+            // 2 PARTS
+
+            // COLLISTION DETECTOR
+            
+            // RELEASE STOPPED ROBOTS IF NO LONGER DANGER
+
         }
     };
 
@@ -112,5 +141,19 @@ public class CentralMonitor extends Agent {
                 addBehaviour(ae);
             }
         });
+    }
+
+    int findRobot(String robot_id) {
+        for (int i = 0; i < idleRobots.size(); i++) {
+            if (idleRobots.get(i).getTagId().equals(robot_id)) {
+                return i;
+            }
+        }
+        for (int i = 0; i < busyRobots.size(); i++) {
+            if (busyRobots.get(i).getTagId().equals(robot_id)) {
+                return i;
+            }
+        }
+        return 0;
     }
 }

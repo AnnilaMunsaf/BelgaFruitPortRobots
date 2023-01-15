@@ -3,15 +3,12 @@ package SimpleContainer;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
-import lejos.utility.Delay;
 import util.JsonCreator;
 import util.TagIdMqtt;
 import org.eclipse.paho.client.mqttv3.*;
 import util.Point2D;
-
 
 
 
@@ -54,9 +51,7 @@ public class RobotAgent extends Agent {
             ACLMessage message=receive();
             if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("registrationAck")) {
                 removeBehaviour(registration);
-                addBehaviour(sensorsFeedback);
                 addBehaviour(messageHandler);
-                //addBehaviour(goToLocation);
             }
             else {
                 System.out.print("Sending a registration request\n");
@@ -80,19 +75,8 @@ public class RobotAgent extends Agent {
         }
     };
 
-    TickerBehaviour sensorsFeedback = new TickerBehaviour(this, 1000) {
-        
-        @Override
-        protected void onTick() {
-            ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-            msg.addReceiver(new AID("RobotTwin-" + id, AID.ISLOCALNAME));
-            String message = JsonCreator.createSensorsFeedbackMessage(Device.getFrontDistance(), Device.getLeftDistance(), Device.getRightDistance());
-            msg.setContent(message);
-            send(msg); 
-        }
-
-    };
-
+    
+    // FIXED BEHAVIOURS
     CyclicBehaviour goToLocation = new CyclicBehaviour() {
 
         @Override
@@ -133,7 +117,7 @@ public class RobotAgent extends Agent {
                             System.out.println("DeltaX: " + Math.abs(target_x - x) + "DeltaY: " + Math.abs(target_y - y));
                         }
 
-                        // FIX ORIENTIENTATION
+                        // FIX ORIENTATION
                         Device.setSpeed(100);
                         while (!(diff_angle >= 358 || diff_angle <= 2)) {
                             if (diff_angle < 358 && diff_angle > 180) {
@@ -164,8 +148,6 @@ public class RobotAgent extends Agent {
 
                         // DESTINATION IS REACHED
                         if (dist < 200) { 
-                            //target_location = null;
-                            //removeBehaviour(goToLocation);
                             Device.stop();
                             targetLocation = null;
                             sendMessage("RobotTwin-" + id, JsonCreator.createLocationReachedMessage());
@@ -180,21 +162,6 @@ public class RobotAgent extends Agent {
                             removeBehaviour(goToLocation);
                         }
                         
-                        
-            
-                        /*
-                        // TOO MUCH LEFT
-                        else if (diff_angle > 5 && diff_angle <= 180) {
-                            Device.setSpeed(100);
-                            Device.turnRight();
-                        }
-                        
-                        // TOO MUCH RIGHT
-                        else if (diff_angle < 355 && diff_angle > 180) {
-                            Device.turnLeft();
-                        }
-                        */
-                        
                         // JUST GO FORWARD
                         else {
                             Device.setSpeed(500);
@@ -208,13 +175,6 @@ public class RobotAgent extends Agent {
             }
         }
     };
-
-    void sendMessage(String receiver, String message) {
-        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-        msg.addReceiver(new AID(receiver, AID.ISLOCALNAME));
-        msg.setContent(message);
-        send(msg);
-    }
 
     CyclicBehaviour obstacleAvoidance = new CyclicBehaviour() {
         @Override
@@ -262,4 +222,11 @@ public class RobotAgent extends Agent {
             }
         }
     };
+
+    void sendMessage(String receiver, String message) {
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.addReceiver(new AID(receiver, AID.ISLOCALNAME));
+        msg.setContent(message);
+        send(msg);
+    }
 }

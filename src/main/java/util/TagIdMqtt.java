@@ -30,20 +30,21 @@ public class TagIdMqtt {
     private final String tagId;
 
     private final Object lock = new Object();
-
     private boolean new_message = false;
     private volatile JSONObject last_message;
 
     volatile Point2D notSmoothened;
-
     private float yaw;
-
     public final List<Point2D> locations = new ArrayList<>();
 
 
     public TagIdMqtt(String tagId) throws MqttException {
         this.tagId = tagId;
         client = create_client();
+    }
+
+    public String getTagId() {
+		return this.tagId;
     }
 
     public Object getLock() {

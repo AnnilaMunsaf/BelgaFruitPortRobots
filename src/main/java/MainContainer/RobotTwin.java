@@ -17,46 +17,29 @@ enum Status {
 public class RobotTwin extends Agent{
     // IDs
     String id;
-    String targetId;
     
     // STATUS
     Status currentStatus = Status.idle;
 
-    // TAGS
-    TagIdMqtt tag;
-
     // WORK ITEMS
     WorkItem currentWorkItem = null;
 
-    // SENSORS
-    int frontDistance;
-    int leftDistance;
-    int rightDistance;
-
-
     @Override
     public void setup() {
-        this.id = "6823";
-        try {
-            this.tag = new TagIdMqtt(id);
-        }
-        catch (MqttException me) {
-            System.out.println("something Went Wrong");
-        }
-        System.out.print("Digital Twin Created\n");
-
         addBehaviour(messageHandler);
+        System.out.print("Digital Twin Created\n");
     }
 
     CyclicBehaviour messageHandler = new CyclicBehaviour() {
         @Override
         public void action() {
             ACLMessage message = receive();
-            if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("sensorsFeedback")) {
-                frontDistance = JsonCreator.parseSensorsFrontDistance(message.getContent());
-                leftDistance = JsonCreator.parseSensorsLeftDistance(message.getContent());
-                rightDistance = JsonCreator.parseSensorsRightDistance(message.getContent());
+            // ID UPDATE (REGISTRATION)
+            if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("idUpdate")) {
+                String robot_id = JsonCreator.parseIdUpdate(message.getContent());
+                id = robot_id;
             }
+            // WORK ITEM RECEIVED
             else if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("workItem")) {
                 Point2D pickup = JsonCreator.parseWorkItemPickUp(message.getContent());
                 Point2D dropoff = JsonCreator.parseWorkItemDropOff(message.getContent());
@@ -64,6 +47,7 @@ public class RobotTwin extends Agent{
                 currentStatus = Status.picking_up;
                 sendMessage("RobotAgent-" + id, JsonCreator.createTargetLocationUpdateMessage(currentWorkItem.getPickup()));
             }
+            // LOCATION REACHED
             else if (message != null && JsonCreator.parseMessageType(message.getContent()).equals("locationReached")) {
                 if (currentStatus == Status.picking_up) {
                     currentStatus = Status.dropping_off;
