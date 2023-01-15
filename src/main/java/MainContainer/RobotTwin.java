@@ -4,15 +4,14 @@ import jade.core.Agent;
 import jade.core.behaviours.*;
 import jade.lang.acl.ACLMessage;
 import util.JsonCreator;
-import util.TagIdMqtt;
 import util.WorkItem;
 import util.Point2D;
-import org.eclipse.paho.client.mqttv3.*;
 
 enum Status {
     picking_up,
     dropping_off,
-    idle
+    idle,
+    triaging
 }
 public class RobotTwin extends Agent{
     // IDs
@@ -50,15 +49,42 @@ public class RobotTwin extends Agent{
             // LOCATION REACHED
             else if (message != null && JsonCreator.parseMessageType(message.getContent()).equals("locationReached")) {
                 if (currentStatus == Status.picking_up) {
-                    currentStatus = Status.dropping_off;
-                    sendMessage("RobotAgent-" + id, JsonCreator.createTargetLocationUpdateMessage(currentWorkItem.getDropoff()));
+                    if (config.rng.nextDouble() <= config.rottenProbability) {
+                        currentStatus = Status.triaging;
+                    }
+                    else {
+                        currentStatus = Status.dropping_off;
+                    }
+                    addBehaviour(pickupDelay);
                 }
                 else if (currentStatus == Status.dropping_off) {
                     currentStatus = Status.idle;
                     currentWorkItem = null;
-                    sendMessage("CentralMonitor", JsonCreator.createWorkItemFinishedMessage(id));
+                    addBehaviour(workItemFinishedDelay);
+                }
+                else if (currentStatus ==  Status.triaging) {
+                    currentStatus = Status.dropping_off;
+                    addBehaviour(pickupDelay);
                 }
             };
+        }
+    };
+
+
+    WakerBehaviour workItemFinishedDelay = new WakerBehaviour(this, 5000) {
+        protected void handleElapsedTimeout() {
+            sendMessage("CentralMonitor", JsonCreator.createWorkItemFinishedMessage(id));
+        }
+    };
+
+    WakerBehaviour pickupDelay = new WakerBehaviour(this, 5000) {
+        protected void handleElapsedTimeout() {
+            if (currentStatus == Status.dropping_off) {
+                sendMessage("RobotAgent-" + id, JsonCreator.createTargetLocationUpdateMessage(currentWorkItem.getDropoff()));
+            }
+            else if (currentStatus == Status.triaging) {
+                sendMessage("RobotAgent-" + id, JsonCreator.createTargetLocationUpdateMessage(config.triaging_station));
+            }
         }
     };
 
