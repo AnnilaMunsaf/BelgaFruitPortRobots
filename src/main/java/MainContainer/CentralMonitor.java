@@ -25,13 +25,14 @@ public class CentralMonitor extends Agent {
 
     ArrayList<TagIdMqtt> idleRobots = new ArrayList<TagIdMqtt>();
     ArrayList<TagIdMqtt> busyRobots = new ArrayList<TagIdMqtt>();    
+    ArrayList<TagIdMqtt> stoppedRobots = new ArrayList<TagIdMqtt>();    
+
 
     @Override
     public void setup() {
         addBehaviour(messageHandler);
         addBehaviour(scheduler);
         workItems.add(new WorkItem(12655, 14880, 14830, 13837));
-
     }
 
 
@@ -94,17 +95,41 @@ public class CentralMonitor extends Agent {
         }
     };
 
-    TickerBehaviour collisionDetector = new TickerBehaviour(this, 1000) {
+    CyclicBehaviour collisionDetector = new CyclicBehaviour() {
         @Override
-        public void onTick() {
-            // 2 PARTS
-
-            // COLLISTION DETECTOR
-            
-            // RELEASE STOPPED ROBOTS IF NO LONGER DANGER
-
+        public void action() {
+            // COLLISION DETECTOR
+            for (int i = 0; i < busyRobots.size(); i++) {
+                for (int j = i+1; i < busyRobots.size(); i++) {
+                    if (busyRobots.get(i).getLocation().dist(busyRobots.get(j).getLocation()) < 200) {
+                        // SEND MESSAGE TO BUSY ROBOT i TO STOP
+                        sendMessage("RobotTwin-" + busyRobots.get(i).getTagId(), JsonCreator.createStopOrder());
+                        stoppedRobots.add(busyRobots.get(i));
+                    }
+                }
+            }
         }
     };
+    
+    TickerBehaviour collisionReleaser = new TickerBehaviour(this, 5000) {
+        @Override
+        public void onTick() {
+            // RELEASE STOPPED ROBOTS IF NO LONGER DANGER
+            ArrayList<TagIdMqtt> newStoppedRobots = new ArrayList<TagIdMqtt>();  
+     outer: for (int i = 0; i < stoppedRobots.size(); i++) {
+                // IS THERE ANY BUSY ROBOT NEAR?
+                for (int j = 0; j < busyRobots.size(); j++) {
+                    if (stoppedRobots.get(i).getLocation().dist(busyRobots.get(j).getLocation()) < 400) {
+                        newStoppedRobots.add(stoppedRobots.get(i));
+                        continue outer;
+                    }
+                }
+                sendMessage("RobotTwin-" + stoppedRobots.get(i).getTagId(), JsonCreator.createResumeOrder());
+            }
+            stoppedRobots = newStoppedRobots;
+        }
+    };
+
 
     void sendMessage(String receiver, String message) {
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);

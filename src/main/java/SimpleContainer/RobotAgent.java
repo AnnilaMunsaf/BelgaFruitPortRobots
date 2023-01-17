@@ -29,6 +29,9 @@ public class RobotAgent extends Agent {
     int backwardThreshold = 15;
     int sideThreshold = 15;
 
+    // BATTERY
+    int battery = 60 * 5;   // 5 minutes
+
     public RobotAgent(String id) {
         this.id = id;
         try {
@@ -64,6 +67,18 @@ public class RobotAgent extends Agent {
         }
     };
 
+    TickerBehaviour batteryController = new TickerBehaviour(this, 1000) {
+        @Override
+        public void onTick() {
+            battery--;
+            if (battery <= 0) {
+                // do some stuff
+            }
+        }
+    
+    };
+
+
     CyclicBehaviour messageHandler = new CyclicBehaviour() {
         @Override
         public void action() {
@@ -71,6 +86,15 @@ public class RobotAgent extends Agent {
             if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("targetLocationUpdate")) {
                 targetLocation = JsonCreator.parseTargetLocationUpdate(message.getContent());
                 addBehaviour(goToLocation);
+            }
+            else if (message != null && JsonCreator.parseMessageType(message.getContent()).equals("stop")) {
+                removeBehaviour(goToLocation);
+                removeBehaviour(obstacleAvoidance);
+            }
+            else if (message != null && JsonCreator.parseMessageType(message.getContent()).equals("resume")) {
+                if (targetLocation != null) {
+                    addBehaviour(goToLocation);
+                }
             }
         }
     };

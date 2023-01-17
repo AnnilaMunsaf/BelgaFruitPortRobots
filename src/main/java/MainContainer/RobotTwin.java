@@ -66,7 +66,14 @@ public class RobotTwin extends Agent{
                     currentStatus = Status.dropping_off;
                     addBehaviour(pickupDelay);
                 }
-            };
+            }
+            // COLLISION DETECTION
+            else if (message != null && JsonCreator.parseMessageType(message.getContent()).equals("stop")) {
+                sendMessage("RobotAgent-" + id, JsonCreator.createStopOrder());
+            }
+            else if (message != null && JsonCreator.parseMessageType(message.getContent()).equals("resume")) {
+                sendMessage("RobotAgent-" + id, JsonCreator.createResumeOrder());
+            }
         }
     };
 

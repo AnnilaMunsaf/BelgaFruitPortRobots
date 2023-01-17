@@ -80,6 +80,22 @@ public final class JsonCreator {
         return message.toString();
     }
 
+    // COLLISION
+
+    public static String createStopOrder() {
+        JsonObject message = new JsonObject();
+        message.addProperty("messageType", "stop");
+        return message.toString();
+    }
+
+    public static String createResumeOrder() {
+        JsonObject message = new JsonObject();
+        message.addProperty("messageType", "resume");
+        return message.toString();
+    }
+
+
+
 
     // --- PARSING ---
 
