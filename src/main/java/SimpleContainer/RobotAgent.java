@@ -67,18 +67,6 @@ public class RobotAgent extends Agent {
         }
     };
 
-    TickerBehaviour batteryController = new TickerBehaviour(this, 1000) {
-        @Override
-        public void onTick() {
-            battery--;
-            if (battery <= 0) {
-                // do some stuff
-            }
-        }
-    
-    };
-
-
     CyclicBehaviour messageHandler = new CyclicBehaviour() {
         @Override
         public void action() {

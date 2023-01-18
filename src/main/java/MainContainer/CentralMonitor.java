@@ -23,10 +23,12 @@ import org.eclipse.paho.client.mqttv3.*;
 public class CentralMonitor extends Agent {
     ArrayList<WorkItem> workItems = new ArrayList<WorkItem>();
 
+    // INVARIANT FOR THESE 3 ARRAYS: INTERSECTION IS EMPTY
     ArrayList<TagIdMqtt> idleRobots = new ArrayList<TagIdMqtt>();
     ArrayList<TagIdMqtt> busyRobots = new ArrayList<TagIdMqtt>();    
-    ArrayList<TagIdMqtt> stoppedRobots = new ArrayList<TagIdMqtt>();    
+    ArrayList<TagIdMqtt> chargingRobots = new ArrayList<TagIdMqtt>();   
 
+    ArrayList<TagIdMqtt> stoppedRobots = new ArrayList<TagIdMqtt>();   
 
     @Override
     public void setup() {
@@ -35,9 +37,7 @@ public class CentralMonitor extends Agent {
         addBehaviour(collisionDetector);
         addBehaviour(collisionReleaser);
         workItems.add(new WorkItem(12655, 14880, 14830, 13837));
-
         workItems.add(new WorkItem(14036, 14629, 14708, 13065));
-
     }
 
 
@@ -52,29 +52,41 @@ public class CentralMonitor extends Agent {
                 // RETRIEVE ROBOT ID
                 String robot_id = JsonCreator.parseRegistrationId(message.getContent());
                 
-                // IF ROBOT WITH THAT ID NOT YET REGISTERED
-                if (findRobot(robot_id) == 0) {
-                    // CREATE TWIN AGENT AND SEND ID TO TWIN
-                    createTwin(robot_id);
-                    sendMessage("RobotTwin-"+robot_id, JsonCreator.createIdUpdateMessage(robot_id));
+                // CREATE TWIN AGENT AND SEND ID TO TWIN
+                createTwin(robot_id);
+                sendMessage("RobotTwin-"+robot_id, JsonCreator.createIdUpdateMessage(robot_id));
 
-                    // SEND AN ACKNOWLEDGMENT TO THE ROBOT AGENT
-                    sendMessage("RobotAgent-"+robot_id, JsonCreator.createRegistrationAck());
-            
-                    try {
-                        idleRobots.add(new TagIdMqtt(robot_id));
-                    }
-                    catch (MqttException me) {
-                        System.out.println("Something Went Wrong");
-                    }
+                // SEND AN ACKNOWLEDGMENT TO THE ROBOT AGENT
+                sendMessage("RobotAgent-"+robot_id, JsonCreator.createRegistrationAck());
+        
+                try {
+                    idleRobots.add(new TagIdMqtt(robot_id));
+                }
+                catch (MqttException me) {
+                    System.out.println("Something Went Wrong");
                 }
             }
 
             else if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("workItemFinished")) {
                 String robot_id = JsonCreator.parseWorkItemFinished(message.getContent());
-                int index = findRobot(robot_id);
-                idleRobots.add(busyRobots.get(index));
-                busyRobots.remove(index);
+                int index = findBusyRobot(robot_id);
+                idleRobots.add(busyRobots.remove(index));
+            }
+            else if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("chargingNotification")) {
+                String robot_id = JsonCreator.parseWorkItemFinished(message.getContent());
+                int index = findBusyRobot(robot_id);
+                if (index > -1) {
+                    chargingRobots.add(busyRobots.remove(index));
+                }
+                else {
+                    index = findIdleRobot(robot_id);
+                    chargingRobots.add(idleRobots.remove(index));
+                }
+            }
+            else if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("chargingFinishedNotification")) {
+                String robot_id = JsonCreator.parseWorkItemFinished(message.getContent());
+                int index = findChargingRobot(robot_id);
+                idleRobots.add(chargingRobots.remove(index));
             }
         }
     };
@@ -173,17 +185,30 @@ public class CentralMonitor extends Agent {
         });
     }
 
-    int findRobot(String robot_id) {
-        for (int i = 0; i < idleRobots.size(); i++) {
-            if (idleRobots.get(i).getTagId().equals(robot_id)) {
-                return i;
-            }
-        }
+    int findBusyRobot(String robot_id) {
         for (int i = 0; i < busyRobots.size(); i++) {
             if (busyRobots.get(i).getTagId().equals(robot_id)) {
                 return i;
             }
         }
-        return 0;
+        return -1;
+    }
+
+    int findIdleRobot(String robot_id) {
+        for (int i = 0; i < idleRobots.size(); i++) {
+            if (idleRobots.get(i).getTagId().equals(robot_id)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    int findChargingRobot(String robot_id) {
+        for (int i = 0; i < chargingRobots.size(); i++) {
+            if (chargingRobots.get(i).getTagId().equals(robot_id)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

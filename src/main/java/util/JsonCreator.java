@@ -94,6 +94,30 @@ public final class JsonCreator {
         return message.toString();
     }
 
+    // CHARGING
+
+    public static String createChargingNotification(String id) {
+        JsonObject message = new JsonObject();
+        message.addProperty("messageType", "chargingNotification");
+
+        JsonObject data = new JsonObject();
+        data.addProperty("id", id);
+
+        message.add("data", data);
+        return message.toString();
+    }
+
+    public static String chargingFinishedNotification(String id) {
+        JsonObject message = new JsonObject();
+        message.addProperty("messageType", "chargingFinishedNotification");
+
+        JsonObject data = new JsonObject();
+        data.addProperty("id", id);
+
+        message.add("data", data);
+        return message.toString();
+    }
+
 
 
 

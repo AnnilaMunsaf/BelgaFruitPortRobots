@@ -9,6 +9,8 @@ public class config {
     public static Point2D triaging_station;
     public static Dictionary<String, Point2D> charging_stations = new Hashtable<String, Point2D>();
     public static double rottenProbability;
+    public static int batteryTime; // in seconds
+    public static int chargingDuration; // in seconds
 
     static {
         // TRIAGING
@@ -16,6 +18,8 @@ public class config {
         rottenProbability = 0.1;
 
         // CHARGING
+        batteryTime = 60 * 5;
+        chargingDuration = 60 * 1;
         charging_stations.put("6823", new Point2D(0,0));  // CHARGING STATION FOR ROBOT WITH TAG_ID 6823
     }
 

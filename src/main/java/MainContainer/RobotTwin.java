@@ -11,8 +11,10 @@ enum Status {
     picking_up,
     dropping_off,
     idle,
-    triaging
+    triaging,
+    charging
 }
+
 public class RobotTwin extends Agent{
     // IDs
     String id;
@@ -22,6 +24,10 @@ public class RobotTwin extends Agent{
 
     // WORK ITEMS
     WorkItem currentWorkItem = null;
+
+    // BATTERY
+    int battery = config.batteryTime;
+
 
     @Override
     public void setup() {
@@ -66,6 +72,9 @@ public class RobotTwin extends Agent{
                     currentStatus = Status.dropping_off;
                     addBehaviour(pickupDelay);
                 }
+                else if (currentStatus == Status.charging) {
+                    addBehaviour(resetBattery);
+                }
             }
             // COLLISION DETECTION
             else if (message != null && JsonCreator.parseMessageType(message.getContent()).equals("stop")) {
@@ -77,12 +86,46 @@ public class RobotTwin extends Agent{
         }
     };
 
+    TickerBehaviour batteryController = new TickerBehaviour(this, 1000) {
+        @Override
+        public void onTick() {
+            battery--;
+            if (battery == 0) {
+                if (currentStatus == Status.idle) {
+                    // notify central monitor
+                    sendMessage("CentralMonitor", JsonCreator.createChargingNotification(id));
+                    // send robot towards charging station
+                    sendMessage("RobotAgent-" + id, JsonCreator.createTargetLocationUpdateMessage(config.charging_stations.get(id)));
+                    currentStatus = Status.charging;
+                }
+                removeBehaviour(batteryController);
+            }
+        } 
+    };
+
+    WakerBehaviour resetBattery = new WakerBehaviour(this, config.chargingDuration) {
+        protected void handleElapsedTimeout() {
+            // notify central monitor
+            sendMessage("CentralMonitor", JsonCreator.chargingFinishedNotification(id));
+            battery = config.batteryTime;
+            currentStatus = Status.idle;
+            addBehaviour(batteryController);
+        }
+    };
 
     WakerBehaviour workItemFinishedDelay = new WakerBehaviour(this, 5000) {
         protected void handleElapsedTimeout() {
-            sendMessage("CentralMonitor", JsonCreator.createWorkItemFinishedMessage(id));
-        }
+            if (battery == 0) {
+                sendMessage("CentralMonitor", JsonCreator.createChargingNotification(id));
+                sendMessage("RobotAgent-" + id, JsonCreator.createTargetLocationUpdateMessage(config.charging_stations.get(id)));
+                currentStatus = Status.charging;
+            }
+            else {
+                sendMessage("CentralMonitor", JsonCreator.createWorkItemFinishedMessage(id));
+            }
+        } 
     };
+
 
     WakerBehaviour pickupDelay = new WakerBehaviour(this, 5000) {
         protected void handleElapsedTimeout() {
