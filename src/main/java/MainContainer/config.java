@@ -12,7 +12,7 @@ public class config {
 
     static {
         // TRIAGING
-        triaging_station = new Point2D(0, 0);
+        triaging_station = new Point2D(11236, 14665);
         rottenProbability = 0.1;
 
         // CHARGING

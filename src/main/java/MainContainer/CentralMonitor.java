@@ -32,7 +32,12 @@ public class CentralMonitor extends Agent {
     public void setup() {
         addBehaviour(messageHandler);
         addBehaviour(scheduler);
+        addBehaviour(collisionDetector);
+        addBehaviour(collisionReleaser);
         workItems.add(new WorkItem(12655, 14880, 14830, 13837));
+
+        workItems.add(new WorkItem(14036, 14629, 14708, 13065));
+
     }
 
 
@@ -119,7 +124,7 @@ public class CentralMonitor extends Agent {
      outer: for (int i = 0; i < stoppedRobots.size(); i++) {
                 // IS THERE ANY BUSY ROBOT NEAR?
                 for (int j = 0; j < busyRobots.size(); j++) {
-                    if (stoppedRobots.get(i).getLocation().dist(busyRobots.get(j).getLocation()) < 400) {
+                    if (stoppedRobots.get(i).getLocation().dist(busyRobots.get(j).getLocation()) < 400 && !stoppedRobots.get(i).getTagId().equals(busyRobots.get(i).getTagId())) {
                         newStoppedRobots.add(stoppedRobots.get(i));
                         continue outer;
                     }
