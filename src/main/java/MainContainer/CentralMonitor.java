@@ -34,10 +34,9 @@ public class CentralMonitor extends Agent {
     public void setup() {
         addBehaviour(messageHandler);
         addBehaviour(scheduler);
-        addBehaviour(collisionDetector);
-        addBehaviour(collisionReleaser);
-        workItems.add(new WorkItem(12655, 14880, 14830, 13837));
-        workItems.add(new WorkItem(14036, 14629, 14708, 13065));
+        //addBehaviour(collisionDetector);
+        //addBehaviour(collisionReleaser);
+        workItems.add(new WorkItem(config.testPoints.get("D"), config.testPoints.get("B")));
     }
 
 
@@ -54,7 +53,7 @@ public class CentralMonitor extends Agent {
                 
                 // CREATE TWIN AGENT AND SEND ID TO TWIN
                 createTwin(robot_id);
-                sendMessage("RobotTwin-"+robot_id, JsonCreator.createIdUpdateMessage(robot_id));
+                //sendMessage("RobotTwin-"+robot_id, JsonCreator.createIdUpdateMessage(robot_id)); // THIS DOESNT WORK -> GONNA DO IT MANUALLY
 
                 // SEND AN ACKNOWLEDGMENT TO THE ROBOT AGENT
                 sendMessage("RobotAgent-"+robot_id, JsonCreator.createRegistrationAck());
@@ -91,10 +90,10 @@ public class CentralMonitor extends Agent {
         }
     };
 
-    TickerBehaviour scheduler = new TickerBehaviour(this, 1000) {
+    TickerBehaviour scheduler = new TickerBehaviour(this, 5000) {
         @Override
         public void onTick() {
-            if (!workItems.isEmpty() && !idleRobots.isEmpty()) {
+            if (!(workItems.isEmpty() || idleRobots.isEmpty())) {
                 // GET WORK ITEM
                 WorkItem toDoWorkItem = workItems.remove(0);
                 

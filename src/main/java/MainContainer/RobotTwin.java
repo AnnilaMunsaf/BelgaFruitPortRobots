@@ -2,6 +2,7 @@ package MainContainer;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.*;
+import jade.domain.introspection.RemovedBehaviour;
 import jade.lang.acl.ACLMessage;
 import util.JsonCreator;
 import util.WorkItem;
@@ -17,7 +18,7 @@ enum Status {
 
 public class RobotTwin extends Agent{
     // IDs
-    String id;
+    String id = "6a75";
     
     // STATUS
     Status currentStatus = Status.idle;
@@ -32,6 +33,7 @@ public class RobotTwin extends Agent{
     @Override
     public void setup() {
         addBehaviour(messageHandler);
+        addBehaviour(batteryController);
         System.out.print("Digital Twin Created\n");
     }
 
@@ -39,6 +41,7 @@ public class RobotTwin extends Agent{
         @Override
         public void action() {
             ACLMessage message = receive();
+            System.out.println(currentStatus.name());
             // ID UPDATE (REGISTRATION)
             if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("idUpdate")) {
                 String robot_id = JsonCreator.parseIdUpdate(message.getContent());
@@ -68,9 +71,10 @@ public class RobotTwin extends Agent{
                     currentWorkItem = null;
                     addBehaviour(workItemFinishedDelay);
                 }
-                else if (currentStatus ==  Status.triaging) {
-                    currentStatus = Status.dropping_off;
-                    addBehaviour(pickupDelay);
+                else if (currentStatus == Status.triaging) {
+                    currentStatus = Status.idle;
+                    currentWorkItem = null;
+                    addBehaviour(workItemFinishedDelay);
                 }
                 else if (currentStatus == Status.charging) {
                     addBehaviour(resetBattery);
@@ -110,6 +114,7 @@ public class RobotTwin extends Agent{
             battery = config.batteryTime;
             currentStatus = Status.idle;
             addBehaviour(batteryController);
+            removeBehaviour(resetBattery);
         }
     };
 
@@ -123,7 +128,8 @@ public class RobotTwin extends Agent{
             else {
                 sendMessage("CentralMonitor", JsonCreator.createWorkItemFinishedMessage(id));
             }
-        } 
+            removeBehaviour(workItemFinishedDelay);
+        }
     };
 
 
@@ -135,6 +141,7 @@ public class RobotTwin extends Agent{
             else if (currentStatus == Status.triaging) {
                 sendMessage("RobotAgent-" + id, JsonCreator.createTargetLocationUpdateMessage(config.triaging_station));
             }
+            removeBehaviour(pickupDelay);
         }
     };
 

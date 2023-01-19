@@ -25,9 +25,9 @@ public class RobotAgent extends Agent {
     long obstacleTimer;
 
     // THRESHHOLDS
-    int frontThreshold = 30;
-    int backwardThreshold = 15;
-    int sideThreshold = 15;
+    int frontThreshold = 2; //30;
+    int backwardThreshold = 1; //15;
+    int sideThreshold = 1; //15;
 
     // BATTERY
     int battery = 60 * 5;   // 5 minutes

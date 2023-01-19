@@ -11,16 +11,26 @@ public class config {
     public static double rottenProbability;
     public static int batteryTime; // in seconds
     public static int chargingDuration; // in seconds
+    public static Dictionary<String, Point2D> testPoints = new Hashtable<String, Point2D>();
 
     static {
         // TRIAGING
-        triaging_station = new Point2D(11236, 14665);
-        rottenProbability = 0.1;
+        triaging_station = new Point2D(15288, 14961);
+        rottenProbability = 0;
 
         // CHARGING
-        batteryTime = 60 * 5;
-        chargingDuration = 60 * 1;
-        charging_stations.put("6823", new Point2D(0,0));  // CHARGING STATION FOR ROBOT WITH TAG_ID 6823
+        batteryTime = 60;                                  // BATTERY DURATION IN SECONDS
+        chargingDuration = 30;                                 // CHARGING DURATION IN SECONDS
+        // TEST POINTS
+        testPoints.put("A", new Point2D(14798,13077)); 
+        testPoints.put("B", new Point2D(15487,13754)); 
+        testPoints.put("C", new Point2D(14992,15190)); 
+        testPoints.put("D", new Point2D(13454,14198)); 
+        testPoints.put("E", new Point2D(13575,15001)); 
+        testPoints.put("F", new Point2D(12150,14883)); 
+
+        charging_stations.put("6a75", testPoints.get("E"));  // CHARGING STATION FOR ROBOT WITH TAG_ID 6823
+
     }
 
 

@@ -13,7 +13,7 @@ public class SimpleContainer {
         try {
             // SET THIS TWO FIELDS BEFORE DEPLOYING TO THE ROBOT
             String robot_ip = "192.168.0.171";
-            String tag_id = "6823";
+            String tag_id = "6a75";
 
             Runtime runtime = Runtime.instance();
             String target ="192.168.0.120";
