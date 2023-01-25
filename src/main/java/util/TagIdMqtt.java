@@ -5,7 +5,6 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import util.Point2D;
 
 import java.util.ArrayList;
 import java.util.List;

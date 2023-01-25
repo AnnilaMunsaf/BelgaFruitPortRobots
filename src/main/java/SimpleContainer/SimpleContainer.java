@@ -15,6 +15,9 @@ public class SimpleContainer {
             String robot_ip = "192.168.0.171";
             String tag_id = "6a75";
 
+            //String robot_ip = "192.168.0.111";
+            //String tag_id = "6841";
+
             Runtime runtime = Runtime.instance();
             String target ="192.168.0.120";
             String source = robot_ip;
@@ -34,8 +37,6 @@ public class SimpleContainer {
         } catch (ControllerException e) {
             e.printStackTrace();
         }
-
-
     }
 
     private static void start() {

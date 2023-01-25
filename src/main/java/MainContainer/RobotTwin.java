@@ -2,7 +2,6 @@ package MainContainer;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.*;
-import jade.domain.introspection.RemovedBehaviour;
 import jade.lang.acl.ACLMessage;
 import util.JsonCreator;
 import util.WorkItem;
@@ -18,7 +17,7 @@ enum Status {
 
 public class RobotTwin extends Agent{
     // IDs
-    String id = "6a75";
+    String id;
     
     // STATUS
     Status currentStatus = Status.idle;
@@ -34,6 +33,8 @@ public class RobotTwin extends Agent{
     public void setup() {
         addBehaviour(messageHandler);
         addBehaviour(batteryController);
+        id = getLocalName().substring(10);
+        System.out.println(id);
         System.out.print("Digital Twin Created\n");
     }
 
@@ -41,7 +42,7 @@ public class RobotTwin extends Agent{
         @Override
         public void action() {
             ACLMessage message = receive();
-            System.out.println(currentStatus.name());
+            //System.out.println(currentStatus.name());
             // ID UPDATE (REGISTRATION)
             if (message!=null && JsonCreator.parseMessageType(message.getContent()).equals("idUpdate")) {
                 String robot_id = JsonCreator.parseIdUpdate(message.getContent());
@@ -82,6 +83,7 @@ public class RobotTwin extends Agent{
             }
             // COLLISION DETECTION
             else if (message != null && JsonCreator.parseMessageType(message.getContent()).equals("stop")) {
+                System.out.println("We stopped 1");
                 sendMessage("RobotAgent-" + id, JsonCreator.createStopOrder());
             }
             else if (message != null && JsonCreator.parseMessageType(message.getContent()).equals("resume")) {

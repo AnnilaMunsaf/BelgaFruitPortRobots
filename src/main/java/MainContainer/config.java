@@ -19,8 +19,8 @@ public class config {
         rottenProbability = 0;
 
         // CHARGING
-        batteryTime = 60;                                  // BATTERY DURATION IN SECONDS
-        chargingDuration = 30;                                 // CHARGING DURATION IN SECONDS
+        batteryTime = 60 * 100000;                                     // BATTERY  DURATION IN SECONDS
+        chargingDuration = 30;                                         // CHARGING DURATION IN SECONDS
         // TEST POINTS
         testPoints.put("A", new Point2D(14798,13077)); 
         testPoints.put("B", new Point2D(15487,13754)); 

@@ -25,7 +25,6 @@ public class MainContainer {
             centralMonitor.start();
 
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }

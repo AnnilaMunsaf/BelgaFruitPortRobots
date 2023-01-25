@@ -34,9 +34,13 @@ public class CentralMonitor extends Agent {
     public void setup() {
         addBehaviour(messageHandler);
         addBehaviour(scheduler);
-        //addBehaviour(collisionDetector);
-        //addBehaviour(collisionReleaser);
+        addBehaviour(collisionDetector);
+        addBehaviour(collisionReleaser);
+        workItems.add(new WorkItem(config.testPoints.get("A"), config.testPoints.get("C")));
         workItems.add(new WorkItem(config.testPoints.get("D"), config.testPoints.get("B")));
+        workItems.add(new WorkItem(config.testPoints.get("E"), config.testPoints.get("F")));
+
+
     }
 
 
@@ -115,13 +119,13 @@ public class CentralMonitor extends Agent {
         @Override
         public void action() {
             // COLLISION DETECTOR
-            for (int i = 0; i < busyRobots.size(); i++) {
-                for (int j = i+1; i < busyRobots.size(); i++) {
-                    if (busyRobots.get(i).getLocation().dist(busyRobots.get(j).getLocation()) < 200) {
-                        // SEND MESSAGE TO BUSY ROBOT i TO STOP
-                        sendMessage("RobotTwin-" + busyRobots.get(i).getTagId(), JsonCreator.createStopOrder());
-                        stoppedRobots.add(busyRobots.get(i));
-                    }
+            if (busyRobots.size() >= 2) {
+                System.out.println("Distance between robots: " + busyRobots.get(0).getLocation().dist(busyRobots.get(1).getLocation()));
+                if (busyRobots.get(0).getLocation().dist(busyRobots.get(1).getLocation()) < 1000 && stoppedRobots.size() == 0) {
+                    System.out.println("We are going to stop");
+                    // SEND MESSAGE TO BUSY ROBOT i TO STOP
+                    sendMessage("RobotTwin-" + busyRobots.get(0).getTagId(), JsonCreator.createStopOrder());
+                    stoppedRobots.add(busyRobots.get(0));
                 }
             }
         }
@@ -135,7 +139,7 @@ public class CentralMonitor extends Agent {
      outer: for (int i = 0; i < stoppedRobots.size(); i++) {
                 // IS THERE ANY BUSY ROBOT NEAR?
                 for (int j = 0; j < busyRobots.size(); j++) {
-                    if (stoppedRobots.get(i).getLocation().dist(busyRobots.get(j).getLocation()) < 400 && !stoppedRobots.get(i).getTagId().equals(busyRobots.get(i).getTagId())) {
+                    if (stoppedRobots.get(i).getLocation().dist(busyRobots.get(j).getLocation()) < 700 && !stoppedRobots.get(i).getTagId().equals(busyRobots.get(i).getTagId())) {
                         newStoppedRobots.add(stoppedRobots.get(i));
                         continue outer;
                     }
@@ -205,6 +209,15 @@ public class CentralMonitor extends Agent {
     int findChargingRobot(String robot_id) {
         for (int i = 0; i < chargingRobots.size(); i++) {
             if (chargingRobots.get(i).getTagId().equals(robot_id)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    int findStoppedRobots(String robot_id) {
+        for (int i = 0; i < stoppedRobots.size(); i++) {
+            if (stoppedRobots.get(i).getTagId().equals(robot_id)) {
                 return i;
             }
         }

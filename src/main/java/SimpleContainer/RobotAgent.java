@@ -25,12 +25,16 @@ public class RobotAgent extends Agent {
     long obstacleTimer;
 
     // THRESHHOLDS
-    int frontThreshold = 2; //30;
-    int backwardThreshold = 1; //15;
-    int sideThreshold = 1; //15;
+    int frontThreshold = 30;
+    int backwardThreshold = 15;
+    int sideThreshold = 15;
+
+    // STOPPED
+    Boolean stopped = false;
+
 
     // BATTERY
-    int battery = 60 * 5;   // 5 minutes
+    int battery = 60 * 5000000;   // 5 minutes
 
     public RobotAgent(String id) {
         this.id = id;
@@ -76,8 +80,10 @@ public class RobotAgent extends Agent {
                 addBehaviour(goToLocation);
             }
             else if (message != null && JsonCreator.parseMessageType(message.getContent()).equals("stop")) {
+                System.out.println("We stopped 2");
                 removeBehaviour(goToLocation);
                 removeBehaviour(obstacleAvoidance);
+                Device.stop();
             }
             else if (message != null && JsonCreator.parseMessageType(message.getContent()).equals("resume")) {
                 if (targetLocation != null) {
@@ -131,6 +137,7 @@ public class RobotAgent extends Agent {
 
                         // FIX ORIENTATION
                         Device.setSpeed(100);
+                        /*
                         while (!(diff_angle >= 358 || diff_angle <= 2)) {
                             if (diff_angle < 358 && diff_angle > 180) {
                                 Device.turnLeft();
@@ -155,11 +162,12 @@ public class RobotAgent extends Agent {
                                 removeBehaviour(goToLocation);
                             }
                         }
+                        */
 
                         ///// 5 POSSIBLE CASES AFTER CALCULATION
 
                         // DESTINATION IS REACHED
-                        if (dist < 200) { 
+                        if (dist < 400) { 
                             Device.stop();
                             targetLocation = null;
                             sendMessage("RobotTwin-" + id, JsonCreator.createLocationReachedMessage());
@@ -172,6 +180,13 @@ public class RobotAgent extends Agent {
                             obstacleTimer = System.currentTimeMillis();
                             addBehaviour(obstacleAvoidance);
                             removeBehaviour(goToLocation);
+                        }
+
+                        else if (diff_angle < 358 && diff_angle > 180) {
+                            Device.turnLeft();
+                        }
+                        else if (diff_angle > 2 && diff_angle <= 180) {
+                            Device.turnRight();
                         }
                         
                         // JUST GO FORWARD
@@ -202,7 +217,7 @@ public class RobotAgent extends Agent {
             }
             else if (frontDistance < frontThreshold || rightDistance < sideThreshold || leftDistance < sideThreshold) {
                 if (leftDistance > rightDistance) {
-                    while (frontDistance < frontThreshold || rightDistance < sideThreshold || leftDistance < sideThreshold) {
+                    if (!stopped) {
                         Device.setSpeed(200);   
                         Device.turnLeft();
                         frontDistance = Device.getFrontDistance();
@@ -212,7 +227,7 @@ public class RobotAgent extends Agent {
                     obstacleTimer = System.currentTimeMillis();
                 }
                 else {
-                    while (frontDistance < frontThreshold || rightDistance < sideThreshold || leftDistance < sideThreshold) {
+                    if (!stopped) {
                         Device.setSpeed(200); 
                         Device.turnRight();
                         frontDistance = Device.getFrontDistance();
@@ -223,13 +238,15 @@ public class RobotAgent extends Agent {
                 }
             }
             else {
-                Device.setSpeed(300);
-                Device.forward();
-                if (System.currentTimeMillis() - obstacleTimer > 4000) {
-                    Device.stop();
-                    removeBehaviour(obstacleAvoidance);
-                    addBehaviour(goToLocation);
-                    System.out.println("OBSTACLE AVOIDING FINISHED");
+                if (!stopped) {
+                    Device.setSpeed(300);
+                    Device.forward();
+                    if (System.currentTimeMillis() - obstacleTimer > 4000) {
+                        Device.stop();
+                        removeBehaviour(obstacleAvoidance);
+                        addBehaviour(goToLocation);
+                        System.out.println("OBSTACLE AVOIDING FINISHED");
+                    }
                 }
             }
         }
