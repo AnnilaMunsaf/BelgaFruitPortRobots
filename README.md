@@ -1,20 +1,15 @@
-# Template project with Gradle
-
-## Why
-
-Test a new technology is always a bit tedious and it requires an amount of time.
-So, this project try to reduce the curve of learning of any new user with `EV3Dev-lang-java`.
+# How to run the system
 
 ## Prerequisites
 
-The Prerequisites to use this project are:
+The Prerequisites to use this project are: (the bricks at the lab already satisfy this prerequisites)
 
 - Your MINDSTORMS Brick needs to have installed latest `Debian Stretch` version. https://www.ev3dev.org/docs/getting-started/
 - To increase the EV3 CPU Speed, read the following article: https://lechnology.com/2018/06/overclocking-lego-mindstorms-ev3-part-2/
 - Your MINDSTORMS Brick needs to be connected to the same LAN than your laptop. http://www.ev3dev.org/docs/getting-started/#step-5-set-up-a-network-connection
 
 Note: Update the EV3Dev kernel
-https://www.ev3dev.org/docs/tutorials/upgrading-ev3dev/
+https://www.ev3dev.org/docs/tutorials/upgrading-ev3dev/ 
 
 ```
 sudo apt-get update
@@ -23,13 +18,11 @@ sudo apt-get install linux-image-ev3dev-ev3
 
 Once you have all steps done, continue with the next section.
 
-## Getting Started
+## Deploying the code to the robots
 
-This repository stores a template project about `EV3Dev-lang-java`.
-Once you download in your computer the project,
+Once you download the project
 open your favourite Java IDE ( [Eclipse](https://eclipse.org/home/index.php) or [IntelliJ](https://www.jetbrains.com/idea/))
-to import this [Gradle](https://gradle.org/) project. The project includes latest dependencies and
-an example ready to be deployed on your Robot using the `core` library from `EV3Dev-lang-java`.
+to import this [Gradle](https://gradle.org/) project.
 
 The project includes some tasks to reduce the time to deploy on your robot.
 
@@ -45,44 +38,26 @@ remotes {
 }
 ```
 
-### EV3Dev-lang-java
-
-The tasks associated to deploy on your Robot are:
-
-- testConnection (Test the connection with your Brick)
-- deploy (The project deliver a FatJar to your Brick)
-- remoteRun (Execute a Jar deployed on your Brick)
-- deployAndRun (Deploy & Execute from your Computer the program that you configured on the file: MANIFEST.MF)
-- ev3devInfo (Get technical information about your EV3 Brick)
-- removePreviousJar (Remove current jar remotely)
-- remoteBrickRun (If your program is going to use some EV3 Actuator like LCD, Buttons, use this task to execute the program)
-- remoteRun (Execute your jar remotely)
-- remoteRunClassVerbose (Execute your jar and show JVM info)
-- remoteProfilingRun (Execute your jar configured for Profiling activities)
-- deployAndBrickRun (Deploy & Execute your program with Brickrun)
-- deployAndProfilingRun  (Deploy & Execute your jar configured for Profiling activities)
-- pkillJava (Kill Java processes in your Brick)
-
-You can use the Java IDE to launch the task or execute them from the terminal
-
+also update the file `./src/main/java/SimpleContainer/SimpleContainer.java` with the brick ip and the used tag id (lines 15 and 16)
 ```
-./gradlew deployAndBrickRun
+String robot_ip = "192.168.0.180";
+String tag_id = "6a75";
 ```
 
-## Javadocs
+now you can use the gradle deploy task to deploy the code to the robot. Do this for each robot that you want to add to the system.
 
-The project has the following technical documentation
+## Running the containers
 
-http://ev3dev-lang-java.github.io/docs/api/latest/index.html
+The main container can be run using the file `./src/main/java/MainContainer/MainContainer.java`
 
-## Examples
+after that you have to run the simple container of each robot that you want to add to the system, to do this first ssh to the robot with
 
-Exist several examples ready to use here:
+```
+ssh robot@<robot_ip>
+```
 
-https://github.com/ev3dev-lang-java/examples
+the password to access the brick pi is "maker", once you are inside you can run the simple container with
 
-## Issues
-
-If you have any problem or doubt, use the main project.
-
-https://github.com/ev3dev-lang-java/ev3dev-lang-java/issues
+```
+java -jar BelgaFruitPortRobots.jar
+```
